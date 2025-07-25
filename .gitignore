@@ -1,0 +1,14 @@
+# .gitignore for Visual Studio / C#
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj.vspscc
+**/obj/
+**/bin/
+/packages/
+*.dll
+*.exe
+*.pdb
+*.cache
+.vs/

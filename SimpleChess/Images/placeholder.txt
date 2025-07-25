@@ -1,0 +1,2 @@
+This is a placeholder file to ensure the Images folder is created. 
+Images should be copied from the top-level images folder to this folder.

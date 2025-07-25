@@ -1,0 +1,86 @@
+<Window x:Class="SimpleChess.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SimpleChess.Views"
+        xmlns:viewmodels="clr-namespace:SimpleChess.ViewModels"
+        xmlns:converters="clr-namespace:SimpleChess.Converters"
+        mc:Ignorable="d"
+        Title="Simple Chess" Height="650" Width="600">
+
+    <Window.Resources>
+        <converters:SquareColorConverter x:Key="SquareColorConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:PieceToVisibilityConverter x:Key="PieceToVisibilityConverter"/>
+        <converters:GameStateToColorConverter x:Key="GameStateToColorConverter"/>
+
+    </Window.Resources>
+
+    <Window.DataContext>
+        <viewmodels:MainViewModel/>
+    </Window.DataContext>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Game">
+                <MenuItem Header="New Game" Command="{Binding NewGameCommand}"/>
+                <MenuItem Header="Save Game" Command="{Binding SaveGameCommand}"/>
+                <MenuItem Header="Load Game" Command="{Binding LoadGameCommand}"/>
+                <Separator/>
+                <MenuItem Header="Exit" Command="{Binding ExitCommand}"/>
+            </MenuItem>
+        </Menu>
+        <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0" Text="Simple Chess" 
+                   FontSize="24" FontWeight="Bold" 
+                   HorizontalAlignment="Center" 
+                   Margin="10"/>
+
+        <!-- Chessboard -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Squares}" Margin="20">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="8" Columns="8"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Style="{StaticResource ChessSquareStyle}"
+                            Command="{Binding DataContext.SquareClickCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}"
+                            Background="{Binding IsLight, Converter={StaticResource SquareColorConverter}}">
+                        <Grid>
+                            <!-- Highlight for selected square -->
+                            <Rectangle Fill="{StaticResource SelectedSquareColor}" 
+                                       Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <!-- Highlight for valid move -->
+                            <Rectangle Fill="{StaticResource ValidMoveColor}" 
+                                       Visibility="{Binding IsValidMove, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <!-- Chess Piece -->
+                            <Image Style="{StaticResource ChessPieceStyle}" 
+                                   Source="{Binding Piece.ImagePath}" 
+                                   Visibility="{Binding Piece, Converter={StaticResource PieceToVisibilityConverter}}"/>
+                        </Grid>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="2" Background="{Binding GameState, Converter={StaticResource GameStateToColorConverter}}">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}" Margin="10,0" FontWeight="Bold"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+    </DockPanel>
+</Window>

@@ -1,0 +1,51 @@
+<Window x:Class="SimpleChess.Views.PawnPromotionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SimpleChess.Views"
+        mc:Ignorable="d"
+        Title="Pawn Promotion" Height="220" Width="400" 
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Choose a piece for pawn promotion:" 
+                   FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <UniformGrid Grid.Row="1" Rows="1" Columns="4">
+            <Button x:Name="QueenButton" Margin="5" Click="OnPieceSelected" Tag="Queen">
+                <StackPanel>
+                    <Image x:Name="QueenImage" Width="50" Height="50"/>
+                    <TextBlock Text="Queen" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="RookButton" Margin="5" Click="OnPieceSelected" Tag="Rook">
+                <StackPanel>
+                    <Image x:Name="RookImage" Width="50" Height="50"/>
+                    <TextBlock Text="Rook" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="BishopButton" Margin="5" Click="OnPieceSelected" Tag="Bishop">
+                <StackPanel>
+                    <Image x:Name="BishopImage" Width="50" Height="50"/>
+                    <TextBlock Text="Bishop" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="KnightButton" Margin="5" Click="OnPieceSelected" Tag="Knight">
+                <StackPanel>
+                    <Image x:Name="KnightImage" Width="50" Height="50"/>
+                    <TextBlock Text="Knight" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </UniformGrid>
+    </Grid>
+</Window>

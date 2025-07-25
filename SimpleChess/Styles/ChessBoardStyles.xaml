@@ -1,0 +1,45 @@
+
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Chess Board Colors -->
+    <SolidColorBrush x:Key="LightSquareColor" Color="#F0D9B5"/>
+    <SolidColorBrush x:Key="DarkSquareColor" Color="#B58863"/>
+    <SolidColorBrush x:Key="SelectedSquareColor" Color="#7BAF6A"/>
+    <SolidColorBrush x:Key="ValidMoveColor" Color="#8EB9A0" Opacity="0.5"/>
+
+    <!-- Square Styles -->
+    <Style x:Key="ChessSquareStyle" TargetType="Button">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Rectangle x:Name="Background" Fill="{TemplateBinding Background}"/>
+                        <TextBlock x:Name="NotationLabel" 
+                                  Text="{Binding Notation}" 
+                                  VerticalAlignment="Bottom" 
+                                  HorizontalAlignment="Left" 
+                                  Margin="2" 
+                                  Foreground="#80000000"
+                                  FontSize="10"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.8"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Chess Piece Image Style -->
+    <Style x:Key="ChessPieceStyle" TargetType="Image">
+        <Setter Property="Width" Value="45"/>
+        <Setter Property="Height" Value="45"/>
+        <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+    </Style>
+
+</ResourceDictionary>
