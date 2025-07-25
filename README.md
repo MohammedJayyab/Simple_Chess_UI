@@ -25,7 +25,7 @@ Simple Chess is a fully functional chess game with a clean, minimalist UI that f
 
 ## Screenshots
 
-_[![Screenshots would go here](https://github.com/MohammedJayyab/Simple_Chess_UI/blob/master/board.png)]_
+_![Chess Board](https://github.com/MohammedJayyab/Simple_Chess_UI/blob/master/board.png)_
 
 ## How to Play
 
@@ -80,7 +80,7 @@ _[![Screenshots would go here](https://github.com/MohammedJayyab/Simple_Chess_UI
 
 ## License
 
-[Your chosen license here]
+[MIT License](https://opensource.org/licenses/MIT]
 
 ## Acknowledgements
 
