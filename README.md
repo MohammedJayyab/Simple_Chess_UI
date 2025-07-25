@@ -25,27 +25,31 @@ Simple Chess is a fully functional chess game with a clean, minimalist UI that f
 
 ## Screenshots
 
-*[Screenshots would go here]*
+_[![Screenshots would go here](https://github.com/MohammedJayyab/Simple_Chess_UI/blob/master/board.png)]_
 
 ## How to Play
 
 1. **Starting a Game**
+
    - Launch the application
    - White always moves first
    - Use the Game menu to start a new game, save or load a game
 
 2. **Making a Move**
+
    - Click on the piece you want to move
    - Valid destination squares will be highlighted
    - Click on a valid square to move the piece
    - The move will be recorded in standard algebraic notation in the move history
 
 3. **Special Moves**
+
    - **Castling**: Click the king, then click two squares to the left or right (displayed as O-O or O-O-O in notation)
    - **Pawn Promotion**: Move a pawn to the last rank, then select a piece from the dialog
    - **En Passant**: Capture an opponent pawn that has just moved two squares forward by moving your pawn diagonally behind it
 
 4. **Game Management**
+
    - **Undo Move**: Select "Undo Move" from the Game menu to take back the last move
    - **Save Game**: Select "Save Game" from the Game menu to save your current game state
    - **Load Game**: Select "Load Game" from the Game menu to resume a previously saved game
