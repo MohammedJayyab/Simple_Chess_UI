@@ -16,9 +16,20 @@ namespace SimpleChess.ViewModels
         private string _statusMessage = "White's turn to move";
         private GameState _gameState = GameState.InProgress;
         private bool _isKingInCheck = false;
+        private MoveHistory _moveHistory = new MoveHistory();
 
         public ObservableCollection<Square> Squares { get; private set; }
         public ICommand SquareClickCommand { get; private set; }
+
+        public MoveHistory MoveHistory 
+        { 
+            get => _moveHistory; 
+            private set 
+            {
+                _moveHistory = value;
+                OnPropertyChanged();
+            }
+        }
 
         public GameState GameState
         {
@@ -139,13 +150,76 @@ namespace SimpleChess.ViewModels
             }
             else if (clickedSquare.IsValidMove)
             {
+                // Get info about the move BEFORE making it
+                PlayerColor movingColor = _selectedSquare.Piece.Color;
+                PieceType movingType = _selectedSquare.Piece.Type;
+                Position fromPos = _selectedSquare.Position;
+                Position toPos = clickedSquare.Position;
+                bool isCapture = clickedSquare.Piece != null;
+                
+                // Get the move information before actually moving the piece
+                string notation = GenerateMoveNotation(movingColor, movingType, fromPos, toPos, isCapture);
+                
+                // Save the move for the SaveGame functionality
+                RecordMove(_selectedSquare, clickedSquare);
+                
                 // Move the piece to the new square
                 MovePiece(_selectedSquare, clickedSquare);
                 ClearSelectionAndHighlights();
-                SwitchPlayer();
-
-                // After a move, check the game state
+                
+                // After a move, check the game state before switching player
                 UpdateGameState();
+                
+                // Force complete refresh of MoveHistory
+                // This is a brute force approach to ensure binding updates
+                var oldMoves = new ObservableCollection<NotationRecord>(_moveHistory.Moves);
+                
+                if (movingColor == PlayerColor.White)
+                {
+                    // It's a white move
+                    oldMoves.Add(new NotationRecord
+                    {
+                        MoveNumber = oldMoves.Count + 1,
+                        WhiteMove = notation,
+                        BlackMove = null
+                    });
+                }
+                else // Black move
+                {
+                    // It's a black move
+                    if (oldMoves.Count > 0)
+                    {
+                        var lastMove = oldMoves[oldMoves.Count - 1];
+                        lastMove.BlackMove = notation;
+                        
+                        // Replace the last record with the updated one
+                        oldMoves.RemoveAt(oldMoves.Count - 1);
+                        oldMoves.Add(lastMove);
+                    }
+                    else
+                    {
+                        // Unlikely case - first move is by black
+                        oldMoves.Add(new NotationRecord
+                        {
+                            MoveNumber = 1,
+                            WhiteMove = "",
+                            BlackMove = notation
+                        });
+                    }
+                }
+                
+                // Create a completely new MoveHistory to force a refresh
+                _moveHistory = new MoveHistory();
+                foreach (var move in oldMoves)
+                {
+                    _moveHistory.Moves.Add(move);
+                }
+                
+                // Notify that MoveHistory has changed
+                OnPropertyChanged(nameof(MoveHistory));
+                
+                // Switch player after recording move
+                SwitchPlayer();
             }
             else if (clickedSquare.Piece != null && clickedSquare.Piece.Color == _currentPlayer)
             {
@@ -199,7 +273,7 @@ namespace SimpleChess.ViewModels
             }
         }
 
-        private void MovePiece(Square fromSquare, Square toSquare)
+        private (Piece piece, Position from, Position to, bool isCapture, bool isPromotion, PieceType? promotionType, bool isCastling) MovePiece(Square fromSquare, Square toSquare)
         {
             // Record if it's the piece's first move
             bool isFirstMove = !fromSquare.Piece.HasMoved;
@@ -231,22 +305,61 @@ namespace SimpleChess.ViewModels
                 // Could add captured piece to a list here if tracking is needed
             }
 
+            // Record ALL move information before making any changes
+            bool isCapture = toSquare.Piece != null;
+            bool isCastling = fromSquare.Piece != null && 
+                             fromSquare.Piece.Type == PieceType.King && 
+                             Math.Abs(toSquare.Position.Column - fromSquare.Position.Column) == 2;
+
+            // Store a reference to the moving piece for notation purposes
+            Piece movingPiece = fromSquare.Piece;
+            PieceType originalPieceType = movingPiece?.Type ?? PieceType.Pawn;
+
             // Move the piece
             toSquare.Piece = fromSquare.Piece;
             fromSquare.Piece = null;
 
-            // Update piece position and HasMoved flag
-            toSquare.Piece.Position = toSquare.Position;
-            toSquare.Piece.HasMoved = true;
+            // Update piece position and HasMoved flag (if piece exists)
+            if (toSquare.Piece != null)
+            {
+                toSquare.Piece.Position = toSquare.Position;
+                toSquare.Piece.HasMoved = true;
+            }
+            PieceType? promotionType = null;
 
             // Handle pawn promotion
-            if (toSquare.Piece.Type == PieceType.Pawn && (toSquare.Position.Row == 0 || toSquare.Position.Row == 7))
+            bool willPromote = toSquare.Piece != null && 
+                         toSquare.Piece.Type == PieceType.Pawn && 
+                         (toSquare.Position.Row == 0 || toSquare.Position.Row == 7);
+
+            if (willPromote)
             {
-                PromotePawn(toSquare);
+                // Store pawn info
+                PlayerColor pawnColor = toSquare.Piece.Color;
+                Position pawnPosition = toSquare.Position;
+
+                // Get promotion type from dialog
+                var promotionDialog = new Views.PawnPromotionDialog(pawnColor);
+                promotionDialog.Owner = System.Windows.Application.Current.MainWindow;
+
+                if (promotionDialog.ShowDialog() == true)
+                {
+                    promotionType = promotionDialog.SelectedPieceType;
+                }
+                else
+                {
+                    promotionType = PieceType.Queen; // Default
+                }
+
+                // Replace pawn with the promoted piece
+                toSquare.Piece = new Piece(promotionType.Value, pawnColor, pawnPosition)
+                {
+                    HasMoved = true
+                };
             }
 
-            // Record the move for save/load functionality
-            RecordMove(fromSquare, toSquare);
+            // Return all the information needed to record this move
+            return (movingPiece, fromSquare.Position, toSquare.Position, isCapture, promotionType.HasValue, promotionType, isCastling);
         }
 
         private void PromotePawn(Square pawnSquare)
@@ -470,6 +583,82 @@ namespace SimpleChess.ViewModels
             }
 
             return true;
+        }
+        
+        // Generate algebraic notation directly without relying on MoveHistory class
+        private string GenerateMoveNotation(PlayerColor pieceColor, PieceType pieceType, Position from, Position to, bool isCapture)
+        {
+            string notation = "";
+            
+            // Check for castling (King moves 2 squares horizontally)
+            if (pieceType == PieceType.King && Math.Abs(from.Column - to.Column) == 2)
+            {
+                // Kingside castling (O-O)
+                if (to.Column > from.Column)
+                {
+                    notation = "O-O";
+                }
+                // Queenside castling (O-O-O)
+                else
+                {
+                    notation = "O-O-O";
+                }
+                
+                // Add check/checkmate symbols if needed
+                if (GameState == GameState.Check)
+                {
+                    notation += "+";
+                }
+                else if (GameState == GameState.Checkmate)
+                {
+                    notation += "#";
+                }
+                
+                return notation;
+            }
+            
+            // Standard move notation
+            
+            // Add piece letter (except for pawns)
+            if (pieceType != PieceType.Pawn)
+            {
+                switch (pieceType)
+                {
+                    case PieceType.King: notation += "K"; break;
+                    case PieceType.Queen: notation += "Q"; break;
+                    case PieceType.Rook: notation += "R"; break;
+                    case PieceType.Bishop: notation += "B"; break;
+                    case PieceType.Knight: notation += "N"; break;
+                }
+            }
+            
+            // For pawn captures, add the file
+            if (isCapture && pieceType == PieceType.Pawn)
+            {
+                notation += (char)('a' + from.Column);
+            }
+            
+            // Add capture symbol
+            if (isCapture)
+            {
+                notation += "x";
+            }
+            
+            // Add destination square
+            notation += (char)('a' + to.Column);
+            notation += (8 - to.Row).ToString();
+            
+            // Check if it would be check or checkmate
+            if (GameState == GameState.Check)
+            {
+                notation += "+";
+            }
+            else if (GameState == GameState.Checkmate)
+            {
+                notation += "#";
+            }
+            
+            return notation;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
