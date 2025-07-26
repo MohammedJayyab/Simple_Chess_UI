@@ -80,7 +80,7 @@ _![Chess Board](https://github.com/MohammedJayyab/Simple_Chess_UI/blob/master/bo
 
 ## License
 
-[MIT License](https://opensource.org/licenses/MIT]
+MIT License
 
 ## Acknowledgements
 
