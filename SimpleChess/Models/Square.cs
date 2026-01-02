@@ -10,6 +10,8 @@ namespace SimpleChess.Models
         private Piece _piece;
         private bool _isSelected;
         private bool _isValidMove;
+        private bool _isInCheck;
+        private bool _isLastMove;
 
         public Position Position { get; }
         public string Notation => Position.GetNotation();
@@ -51,6 +53,32 @@ namespace SimpleChess.Models
                 if (_isValidMove != value)
                 {
                     _isValidMove = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsInCheck
+        {
+            get => _isInCheck;
+            set
+            {
+                if (_isInCheck != value)
+                {
+                    _isInCheck = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsLastMove
+        {
+            get => _isLastMove;
+            set
+            {
+                if (_isLastMove != value)
+                {
+                    _isLastMove = value;
                     OnPropertyChanged();
                 }
             }

@@ -7,6 +7,8 @@
     <SolidColorBrush x:Key="DarkSquareColor" Color="#B58863"/>
     <SolidColorBrush x:Key="SelectedSquareColor" Color="#7BAF6A"/>
     <SolidColorBrush x:Key="ValidMoveColor" Color="#8EB9A0" Opacity="0.5"/>
+    <SolidColorBrush x:Key="CheckSquareColor" Color="#E57373" Opacity="0.8"/>
+    <SolidColorBrush x:Key="LastMoveSquareColor" Color="#90EE90" Opacity="0.5"/>
 
     <!-- Square Styles -->
     <Style x:Key="ChessSquareStyle" TargetType="Button">
@@ -37,8 +39,8 @@
 
     <!-- Chess Piece Image Style -->
     <Style x:Key="ChessPieceStyle" TargetType="Image">
-        <Setter Property="Width" Value="45"/>
-        <Setter Property="Height" Value="45"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Margin" Value="4"/>
         <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
     </Style>
 

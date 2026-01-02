@@ -83,11 +83,23 @@ namespace SimpleChess.ViewModels
 
         private void UpdateGameState()
         {
+            // Clear check highlights from all squares
+            foreach (var square in Squares)
+            {
+                square.IsInCheck = false;
+            }
+
             bool isInCheck = IsKingInCheck(_currentPlayer);
             _isKingInCheck = isInCheck;
 
             if (isInCheck)
             {
+                // Highlight the king's square in red
+                Square kingSquare = Squares.FirstOrDefault(s => s.Piece?.Type == PieceType.King && s.Piece.Color == _currentPlayer);
+                if (kingSquare != null)
+                {
+                    kingSquare.IsInCheck = true;
+                }
 
                 // Check if there are any valid moves that would get out of check
                 if (!HasValidMoves(_currentPlayer))

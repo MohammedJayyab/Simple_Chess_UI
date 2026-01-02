@@ -16,10 +16,26 @@ namespace SimpleChess.ViewModels
         private string _statusMessage = "White's turn to move";
         private GameState _gameState = GameState.InProgress;
         private bool _isKingInCheck = false;
+        private string _moveInput;
         private MoveHistory _moveHistory = new MoveHistory();
 
         public ObservableCollection<Square> Squares { get; private set; }
         public ICommand SquareClickCommand { get; private set; }
+        public ICommand PlayTextMoveCommand { get; private set; }
+        public ICommand CopyMovesCommand { get; private set; }
+
+        public string MoveInput
+        {
+            get => _moveInput;
+            set
+            {
+                if (_moveInput != value)
+                {
+                    _moveInput = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public MoveHistory MoveHistory 
         { 
@@ -61,6 +77,8 @@ namespace SimpleChess.ViewModels
         {
             InitializeBoard();
             SquareClickCommand = new RelayCommand(OnSquareClick);
+            PlayTextMoveCommand = new RelayCommand(_ => OnPlayTextMove());
+            CopyMovesCommand = new RelayCommand(_ => CopyMoves());
             InitializeCommands();
         }
 
@@ -150,76 +168,10 @@ namespace SimpleChess.ViewModels
             }
             else if (clickedSquare.IsValidMove)
             {
-                // Get info about the move BEFORE making it
-                PlayerColor movingColor = _selectedSquare.Piece.Color;
-                PieceType movingType = _selectedSquare.Piece.Type;
-                Position fromPos = _selectedSquare.Position;
-                Position toPos = clickedSquare.Position;
-                bool isCapture = clickedSquare.Piece != null;
+                Square fromSquare = _selectedSquare;
+                Square toSquare = clickedSquare;
                 
-                // Get the move information before actually moving the piece
-                string notation = GenerateMoveNotation(movingColor, movingType, fromPos, toPos, isCapture);
-                
-                // Save the move for the SaveGame functionality
-                RecordMove(_selectedSquare, clickedSquare);
-                
-                // Move the piece to the new square
-                MovePiece(_selectedSquare, clickedSquare);
-                ClearSelectionAndHighlights();
-                
-                // After a move, check the game state before switching player
-                UpdateGameState();
-                
-                // Force complete refresh of MoveHistory
-                // This is a brute force approach to ensure binding updates
-                var oldMoves = new ObservableCollection<NotationRecord>(_moveHistory.Moves);
-                
-                if (movingColor == PlayerColor.White)
-                {
-                    // It's a white move
-                    oldMoves.Add(new NotationRecord
-                    {
-                        MoveNumber = oldMoves.Count + 1,
-                        WhiteMove = notation,
-                        BlackMove = null
-                    });
-                }
-                else // Black move
-                {
-                    // It's a black move
-                    if (oldMoves.Count > 0)
-                    {
-                        var lastMove = oldMoves[oldMoves.Count - 1];
-                        lastMove.BlackMove = notation;
-                        
-                        // Replace the last record with the updated one
-                        oldMoves.RemoveAt(oldMoves.Count - 1);
-                        oldMoves.Add(lastMove);
-                    }
-                    else
-                    {
-                        // Unlikely case - first move is by black
-                        oldMoves.Add(new NotationRecord
-                        {
-                            MoveNumber = 1,
-                            WhiteMove = "",
-                            BlackMove = notation
-                        });
-                    }
-                }
-                
-                // Create a completely new MoveHistory to force a refresh
-                _moveHistory = new MoveHistory();
-                foreach (var move in oldMoves)
-                {
-                    _moveHistory.Moves.Add(move);
-                }
-                
-                // Notify that MoveHistory has changed
-                OnPropertyChanged(nameof(MoveHistory));
-                
-                // Switch player after recording move
-                SwitchPlayer();
+                ExecuteMoveSequence(fromSquare, toSquare, string.Empty);
             }
             else if (clickedSquare.Piece != null && clickedSquare.Piece.Color == _currentPlayer)
             {
@@ -231,6 +183,10 @@ namespace SimpleChess.ViewModels
             else
             {
                 // Invalid move, just clear the selection
+                if (_selectedSquare != null && !clickedSquare.IsValidMove)
+                {
+                    System.Media.SystemSounds.Hand.Play();
+                }
                 ClearSelectionAndHighlights();
             }
         }

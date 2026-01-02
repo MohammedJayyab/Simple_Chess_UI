@@ -28,9 +28,19 @@
                 <MenuItem Header="Load Game" Command="{Binding LoadGameCommand}"/>
                 <MenuItem Header="Undo Move" Command="{Binding UndoMoveCommand}"/>
                 <Separator/>
+                <MenuItem Header="Copy Moves" Command="{Binding CopyMovesCommand}"/>
+                <Separator/>
                 <MenuItem Header="Exit" Command="{Binding ExitCommand}"/>
             </MenuItem>
         </Menu>
+        
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button Command="{Binding UndoMoveCommand}" Content="Undo" Padding="10,2" Margin="2,0"/>
+                <Button Command="{Binding CopyMovesCommand}" Content="Copy" Padding="10,2" Margin="2,0"/>
+            </ToolBar>
+        </ToolBarTray>
+
         <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -73,6 +83,15 @@
                             <Rectangle Fill="{StaticResource ValidMoveColor}" 
                                        Visibility="{Binding IsValidMove, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
+                            <!-- Highlight for king in check -->
+                            <Rectangle Fill="{StaticResource CheckSquareColor}" 
+                                       Visibility="{Binding IsInCheck, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <!-- Highlight for last move -->
+                            <Rectangle Fill="{StaticResource LastMoveSquareColor}" 
+                                       Margin="4"
+                                       Visibility="{Binding IsLastMove, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
                             <!-- Chess Piece -->
                             <Image Style="{StaticResource ChessPieceStyle}" 
                                    Source="{Binding Piece.ImagePath}" 
@@ -87,6 +106,7 @@
         <Grid Grid.Row="1" Grid.Column="1" Margin="0,20,20,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -95,7 +115,29 @@
                        Margin="0,0,0,10" 
                        HorizontalAlignment="Center"/>
 
-            <ListView Grid.Row="1" ItemsSource="{Binding MoveHistory.Moves}" 
+            <!-- Algebraic Move Input -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                <TextBlock Text="Enter Move (SAN):" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Text="{Binding MoveInput, UpdateSourceTrigger=PropertyChanged}" 
+                             VerticalContentAlignment="Center"
+                             Padding="5,2"
+                             Margin="0,0,5,0">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding PlayTextMoveCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button Grid.Column="1" Content="Play" 
+                            Command="{Binding PlayTextMoveCommand}"
+                            Padding="10,2"/>
+                </Grid>
+            </StackPanel>
+
+            <ListView Grid.Row="2" ItemsSource="{Binding MoveHistory.Moves}" 
                       Background="#F0F0F0" BorderThickness="1" 
                       BorderBrush="#CCCCCC" Padding="5">
                 <ListView.View>

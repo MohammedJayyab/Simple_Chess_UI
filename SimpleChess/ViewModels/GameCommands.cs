@@ -210,10 +210,8 @@ namespace SimpleChess.ViewModels
                     OnPropertyChanged(nameof(MoveHistory));
                     OnPropertyChanged(nameof(Squares));
 
-                    // Update status message based on whose turn it is and game state
-                    UpdateStatusMessage();
-
-                    UpdateStatusMessage();
+                    // Update status message and highlights
+                    UpdateGameState();
                 }
                 catch (Exception ex)
                 {
@@ -337,7 +335,8 @@ namespace SimpleChess.ViewModels
             // Update UI
             OnPropertyChanged(nameof(Squares));
             OnPropertyChanged(nameof(MoveHistory));
-            UpdateStatusMessage();
+            // Update status message and highlights
+            UpdateGameState();
 
             // Command manager needs to be notified that CanExecute state might have changed
             CommandManager.InvalidateRequerySuggested();
